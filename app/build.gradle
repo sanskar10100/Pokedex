@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'kotlin-kapt'
 }
 
 android {
@@ -56,6 +57,9 @@ dependencies {
     implementation 'androidx.activity:activity-compose:1.5.1'
     implementation 'androidx.navigation:navigation-fragment-ktx:2.5.1'
     implementation 'androidx.navigation:navigation-ui-ktx:2.5.1'
+
+    implementation "com.google.dagger:hilt-android:2.43"
+    kapt "com.google.dagger:hilt-compiler:2.43"
 
 
     // Testing

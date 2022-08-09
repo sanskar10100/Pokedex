@@ -6,6 +6,6 @@
 
     <fragment
         android:id="@+id/homeFragment"
-        android:name="dev.sanskar.pokedex.ui.HomeFragment"
+        android:name="dev.sanskar.pokedex.ui.home.HomeFragment"
         android:label="HomeFragment" />
 </navigation>
