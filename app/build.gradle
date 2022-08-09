@@ -2,6 +2,7 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'kotlin-kapt'
+    id 'dagger.hilt.android.plugin'
 }
 
 android {
@@ -18,6 +19,8 @@ android {
         vectorDrawables {
             useSupportLibrary true
         }
+
+        buildConfigField "String", "BASE_URL", "\"https://pokeapi.co/api/v2/\""
     }
 
     buildTypes {
@@ -61,6 +64,10 @@ dependencies {
     implementation "com.google.dagger:hilt-android:2.43"
     kapt "com.google.dagger:hilt-compiler:2.43"
 
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-moshi:2.9.0'
+    implementation "com.squareup.moshi:moshi-kotlin:1.13.0"
+    implementation "com.squareup.okhttp3:logging-interceptor:4.9.3"
 
     // Testing
     testImplementation 'junit:junit:4.13.2'
