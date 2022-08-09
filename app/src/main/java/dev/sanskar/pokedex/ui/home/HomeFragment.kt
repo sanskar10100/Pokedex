@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -29,6 +30,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import dev.sanskar.pokedex.clickWithRipple
+import dev.sanskar.pokedex.model.PokemonDetail
 import dev.sanskar.pokedex.ui.theme.PokedexTheme
 
 @AndroidEntryPoint
@@ -53,36 +55,46 @@ class HomeFragment : Fragment() {
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
     fun ShowPokemons() {
-        val pokemons by viewModel.pokemons.observeAsState()
+        val pokemons by viewModel.pokemonDetails.observeAsState()
         if (pokemons != null) {
             LazyColumn(
                 modifier = Modifier.padding(8.dp)
             ) {
                 stickyHeader {
-                    Column(
-                        Modifier.background(MaterialTheme.colorScheme.surface)
-                    ) {
-                        Text(
-                            "Tap on a pokemon to know more about it!",
-                            style = MaterialTheme.typography.titleLarge,
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.Center
-                        )
-                        Divider()
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
+                    ListHeader()
                 }
                 items(items = pokemons!!, key = { it.name }) {
-                    Text(
-                        text = it.name,
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .fillMaxWidth()
-                            .clickWithRipple { }
-                    )
+                    ListItem(it)
                 }
             }
         } else ErrorView()
+    }
+
+    @Composable
+    private fun ListItem(it: PokemonDetail) {
+        Text(
+            text = it.name,
+            modifier = Modifier
+                .padding(8.dp)
+                .fillMaxWidth()
+                .clickWithRipple { }
+        )
+    }
+
+    @Composable
+    private fun ListHeader() {
+        Column(
+            Modifier.background(MaterialTheme.colorScheme.surface)
+        ) {
+            Text(
+                "Tap on a pokemon to know more about it!",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
+            Divider()
+            Spacer(modifier = Modifier.height(8.dp))
+        }
     }
 
     @Composable

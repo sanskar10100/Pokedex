@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.sanskar.pokedex.model.Pokemon
+import dev.sanskar.pokedex.model.PokemonDetail
 import dev.sanskar.pokedex.model.Pokemons
 import dev.sanskar.pokedex.network.Api
 import javax.inject.Inject
@@ -13,8 +14,7 @@ import logcat.logcat
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(private val api: Api) : ViewModel() {
-    val pokemons = MutableLiveData<List<Pokemon>>()
-
+    val pokemonDetails = MutableLiveData<List<PokemonDetail>>()
 
     init {
         getPokemons()
@@ -24,8 +24,14 @@ class HomeViewModel @Inject constructor(private val api: Api) : ViewModel() {
         viewModelScope.launch {
             val result = api.getPokemons()
             if (result.isSuccessful) {
-                pokemons.value = result.body()?.results
-                logcat { "Network call successful, returned ${pokemons.value?.size} pokemons" }
+                result.body()?.results?.forEach {
+                    val response = api.getPokemonDetail(it.name)
+                    if (response.isSuccessful) {
+                        response.body()?.let {
+                            pokemonDetails.value = pokemonDetails.value?.plus(it) ?: listOf(it)
+                        }
+                    }
+                }
             } else {
                 logcat { "Network call failed with ${result.message()}, ${result.errorBody()}" }
             }
