@@ -15,4 +15,9 @@ interface Api {
     suspend fun getPokemonDetail(
         @Path("name") name: String
     ): Response<PokemonDetail>
+
+    @GET("pokemon/{id}")
+    suspend fun getPokemonDetail(
+        @Path("id") id: Int
+    ): Response<PokemonDetail>
 }

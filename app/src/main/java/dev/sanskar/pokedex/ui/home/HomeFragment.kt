@@ -60,6 +60,7 @@ import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.ui.AppBarConfiguration
 import coil.compose.SubcomposeAsyncImage
 import dagger.hilt.android.AndroidEntryPoint
 import dev.sanskar.pokedex.model.PokemonDetail

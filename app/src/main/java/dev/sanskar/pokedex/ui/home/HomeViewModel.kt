@@ -23,7 +23,7 @@ class HomeViewModel @Inject constructor(private val api: Api) : ViewModel() {
         getPokemons()
     }
 
-    fun getPokemons() {
+    private fun getPokemons() {
         pokemons.value = UiState.Loading
         viewModelScope.launch(Dispatchers.IO) {
             try {
