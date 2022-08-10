@@ -20,21 +20,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
+import androidx.compose.material.Card
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Divider
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.LocalContentAlpha
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,7 +50,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import dev.sanskar.pokedex.model.PokemonDetail
 import dev.sanskar.pokedex.model.UiState
 import dev.sanskar.pokedex.ui.theme.PokedexTheme
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
@@ -73,7 +70,6 @@ class HomeFragment : Fragment() {
         }
     }
 
-    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun PokedexApp() {
         var error by remember { mutableStateOf("") }
@@ -94,6 +90,10 @@ class HomeFragment : Fragment() {
         val pokemonState = viewModel.pokemons.observeAsState()
         var loading by remember { mutableStateOf(true) }
         ShowLoader(showLoader = loading)
+
+        LocalContentAlpha.current.let {
+            Toast.makeText(LocalContext.current, "Current alpha is $it", Toast.LENGTH_SHORT).show()
+        }
 
         when (val currentState = pokemonState.value) {
             null -> {
@@ -125,7 +125,7 @@ class HomeFragment : Fragment() {
         }
     }
 
-    @OptIn(ExperimentalMaterial3Api::class)
+    @OptIn(ExperimentalMaterialApi::class)
     @Composable
     private fun ListItem(it: PokemonDetail) {
         Card(
@@ -178,11 +178,11 @@ class HomeFragment : Fragment() {
     @Composable
     private fun ListHeader() {
         Column(
-            Modifier.background(MaterialTheme.colorScheme.surface)
+            Modifier.background(MaterialTheme.colors.surface)
         ) {
             Text(
                 "Tap on a pokemon to know more about it!",
-                style = MaterialTheme.typography.titleLarge,
+                style = MaterialTheme.typography.h3,
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center
             )
