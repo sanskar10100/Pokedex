@@ -7,5 +7,16 @@
     <fragment
         android:id="@+id/homeFragment"
         android:name="dev.sanskar.pokedex.ui.home.HomeFragment"
-        android:label="HomeFragment" />
+        android:label="HomeFragment" >
+        <action
+            android:id="@+id/action_homeFragment_to_detailFragment"
+            app:destination="@id/detailFragment" />
+    </fragment>
+    <dialog
+        android:id="@+id/detailFragment"
+        android:name="dev.sanskar.pokedex.ui.detail.DetailFragment"
+        android:label="DetailFragment" >
+        <argument android:name="pokemonId"
+            app:argType="integer" />
+    </dialog>
 </navigation>

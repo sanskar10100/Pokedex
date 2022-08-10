@@ -6,6 +6,18 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideIn
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -33,6 +45,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,14 +55,17 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import coil.compose.SubcomposeAsyncImage
 import dagger.hilt.android.AndroidEntryPoint
 import dev.sanskar.pokedex.model.PokemonDetail
 import dev.sanskar.pokedex.model.UiState
 import dev.sanskar.pokedex.ui.theme.PokedexTheme
+import kotlinx.coroutines.delay
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
@@ -84,15 +100,17 @@ class HomeFragment : Fragment() {
         }
     }
 
-    @OptIn(ExperimentalFoundationApi::class)
+    @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
     @Composable
     fun ShowPokemons(modifier: Modifier = Modifier, onError: (String) -> Unit) {
         val pokemonState = viewModel.pokemons.observeAsState()
-        var loading by remember { mutableStateOf(true) }
-        ShowLoader(showLoader = loading)
+        var loading by rememberSaveable { mutableStateOf(true) }
 
-        LocalContentAlpha.current.let {
-            Toast.makeText(LocalContext.current, "Current alpha is $it", Toast.LENGTH_SHORT).show()
+        AnimatedVisibility(
+            visible = loading,
+            exit = scaleOut(animationSpec = tween(1000))
+        ) {
+            ShowLoader()
         }
 
         when (val currentState = pokemonState.value) {
@@ -108,8 +126,14 @@ class HomeFragment : Fragment() {
                 onError(currentState.message)
             }
             is UiState.Success -> {
-                loading  = false
-                AnimatedVisibility(visible = !loading) {
+                AnimatedVisibility(visible = !loading, enter = slideInVertically(
+                    animationSpec = tween(
+                        durationMillis = 500,
+                        500,
+                        easing = LinearOutSlowInEasing
+                    ),
+                    initialOffsetY = { it }
+                )) {
                     LazyColumn(
                         modifier = Modifier.padding(8.dp)
                     ) {
@@ -121,6 +145,7 @@ class HomeFragment : Fragment() {
                         }
                     }
                 }
+                loading = false
             }
         }
     }
@@ -131,8 +156,10 @@ class HomeFragment : Fragment() {
         Card(
             modifier = Modifier.padding(8.dp),
             onClick = {
-                // Todo
-            }
+                val navDirections = HomeFragmentDirections.actionHomeFragmentToDetailFragment(it.id)
+                findNavController().navigate(navDirections)
+            },
+            backgroundColor = Color(0xFF81D4FA)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
@@ -160,18 +187,16 @@ class HomeFragment : Fragment() {
     }
 
     @Composable
-    fun ShowLoader(showLoader: Boolean) {
+    fun ShowLoader() {
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (showLoader) {
-                CircularProgressIndicator(
-                    modifier = Modifier
-                        .size(200.dp)
-                )
-            }
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .size(200.dp)
+            )
         }
     }
 
@@ -182,12 +207,20 @@ class HomeFragment : Fragment() {
         ) {
             Text(
                 "Tap on a pokemon to know more about it!",
-                style = MaterialTheme.typography.h3,
+                style = MaterialTheme.typography.h6,
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center
             )
             Divider()
             Spacer(modifier = Modifier.height(8.dp))
+        }
+    }
+
+    @Preview
+    @Composable
+    fun ShowPokemonsPreview() {
+        PokedexTheme {
+            ShowPokemons(onError = {})
         }
     }
 }
