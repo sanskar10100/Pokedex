@@ -192,7 +192,7 @@ class DetailFragment : BottomSheetDialogFragment() {
         Row(
             Modifier
                 .padding(16.dp)
-                .border(2.dp, Color.Blue, RoundedCornerShape(16.dp))
+                .border(2.dp, Color.Blue, RoundedCornerShape(32.dp))
                 .padding(16.dp)
         ) {
             Column(
