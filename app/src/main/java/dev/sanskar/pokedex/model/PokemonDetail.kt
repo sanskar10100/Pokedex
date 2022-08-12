@@ -7,10 +7,15 @@ data class PokemonDetail(
     val height: Int,
     val id: Int,
     val name: String,
+    val moves: List<Move>,
     val order: Int,
-    val sprites: Sprites
+    val sprites: Sprites,
 )
 
 data class Sprites(
     @Json(name = "front_default") val frontDefault: String
+)
+
+data class Move(
+    val move: NameData
 )

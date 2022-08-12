@@ -1,6 +1,6 @@
 package dev.sanskar.pokedex.model
 
-data class Pokemon(
+data class NameData(
     val name: String,
     val url: String
 )
