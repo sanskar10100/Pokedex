@@ -178,7 +178,7 @@ class DetailFragment : BottomSheetDialogFragment() {
         Spacer(modifier = Modifier.height(20.dp))
 
         Row(
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 text = pokemon.name.replaceFirstChar { it.uppercase() },

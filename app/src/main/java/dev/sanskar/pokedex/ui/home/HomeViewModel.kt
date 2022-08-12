@@ -39,7 +39,7 @@ class HomeViewModel @Inject constructor(private val api: Api) : ViewModel() {
                         }
                     }
                     withContext(Dispatchers.Main.immediate) {
-                        if (pokemonList.isNotEmpty()) pokemons.value = UiState.Success(pokemonList)
+                        if (pokemonList.isNotEmpty()) pokemons.value = UiState.Success(pokemonList.sortedBy { it.name })
                         else pokemons.value = UiState.Error("No pokemons found")
                     }
                 } else {
