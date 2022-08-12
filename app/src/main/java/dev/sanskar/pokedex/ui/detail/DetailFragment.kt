@@ -169,8 +169,6 @@ class DetailFragment : BottomSheetDialogFragment() {
                                     backgroundColor = Color(0xFFFFD54F),
                                 ),
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .align(Alignment.CenterHorizontally)
                             ) {
                                 Text(move.move.name)
                             }
