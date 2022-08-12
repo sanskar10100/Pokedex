@@ -6,7 +6,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -16,17 +20,22 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.paddingFromBaseline
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Divider
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -41,10 +50,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.compose.ui.text.capitalize
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.navArgs
@@ -54,6 +60,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import dev.sanskar.pokedex.capitalizeWords
+import dev.sanskar.pokedex.clickWithRipple
 import dev.sanskar.pokedex.model.PokemonDetail
 import dev.sanskar.pokedex.model.UiState
 import dev.sanskar.pokedex.ui.theme.PokedexTheme
@@ -100,11 +107,13 @@ class DetailFragment : BottomSheetDialogFragment() {
 
     @Composable
     fun DetailScreen(modifier: Modifier = Modifier) {
-        val pokemon = viewModel.pokemon.observeAsState(UiState.Loading)
+        val pokemon by viewModel.pokemon.observeAsState(UiState.Loading)
+        val isFavorite by viewModel.isFavorite.observeAsState(false)
         var loading by remember { mutableStateOf(true) }
 
         LaunchedEffect(key1 = Unit) {
             viewModel.getPokemonDetail(args.pokemonId)
+            viewModel.getFavorite(args.pokemonId)
         }
 
         Column(
@@ -118,13 +127,13 @@ class DetailFragment : BottomSheetDialogFragment() {
                 )
             }
 
-            when (val pokemon = pokemon.value) {
+            when (val pokemon = pokemon) {
                 is UiState.Loading -> {
                     loading = true
                 }
                 is UiState.Success -> {
                     loading = false
-                    SuccessContent(pokemon.data)
+                    SuccessContent(pokemon.data, isFavorite)
                 }
                 is UiState.Error -> {
                     loading = false
@@ -137,7 +146,14 @@ class DetailFragment : BottomSheetDialogFragment() {
     @Composable
     private fun SuccessContent(
         pokemon: PokemonDetail,
+        isFavorite: Boolean
     ) {
+        val favoriteColor by animateColorAsState(
+            if (isFavorite) Color.Red else Color.Gray,
+            animationSpec = tween(
+                durationMillis = 2000
+            )
+        )
         val colorsList = remember {
             mutableListOf(
                 Color(0xFFB71C1C),
@@ -160,10 +176,25 @@ class DetailFragment : BottomSheetDialogFragment() {
             contentScale = ContentScale.Crop
         )
         Spacer(modifier = Modifier.height(20.dp))
-        Text(
-            text = pokemon.name.replaceFirstChar { it.uppercase() },
-            style = MaterialTheme.typography.h4
-        )
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = pokemon.name.replaceFirstChar { it.uppercase() },
+                style = MaterialTheme.typography.h4,
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Icon(
+                imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                contentDescription = "${if (isFavorite) "Remove" else "Add"} Favorite",
+                modifier = Modifier
+                    .size(28.dp)
+                    .clickWithRipple(true) { viewModel.toggleFavorite(pokemon.id, pokemon.name) }
+                    .offset(y = 2.dp),
+                tint = favoriteColor
+            )
+        }
         Text(
             text = "Height: ${pokemon.height}",
             style = MaterialTheme.typography.subtitle1,

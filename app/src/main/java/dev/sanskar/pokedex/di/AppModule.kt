@@ -1,12 +1,17 @@
 package dev.sanskar.pokedex.di
 
+import android.content.Context
+import androidx.room.Room
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import dev.sanskar.pokedex.BuildConfig
+import dev.sanskar.pokedex.db.PokedexDB
+import dev.sanskar.pokedex.db.PokedexDao
 import dev.sanskar.pokedex.network.Api
 import javax.inject.Singleton
 import okhttp3.OkHttpClient
@@ -41,4 +46,17 @@ object AppModule {
     @Singleton
     @Provides
     fun provideApi(retrofit: Retrofit): Api = retrofit.create(Api::class.java)
+
+    @Singleton
+    @Provides
+    fun provideDatabase(@ApplicationContext appContext: Context) =
+        Room.databaseBuilder(
+            appContext,
+            PokedexDB::class.java,
+            "pokedex_db"
+        ).build()
+
+    @Singleton
+    @Provides
+    fun provideDao(db: PokedexDB) = db.pokedexDao()
 }

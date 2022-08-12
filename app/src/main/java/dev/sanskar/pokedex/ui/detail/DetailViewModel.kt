@@ -4,6 +4,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.sanskar.pokedex.db.PokedexDao
+import dev.sanskar.pokedex.model.Favorite
 import dev.sanskar.pokedex.model.PokemonDetail
 import dev.sanskar.pokedex.model.UiState
 import dev.sanskar.pokedex.network.Api
@@ -11,9 +13,13 @@ import javax.inject.Inject
 import kotlinx.coroutines.launch
 
 @HiltViewModel
-class DetailViewModel @Inject constructor(private val api: Api) : ViewModel() {
+class DetailViewModel @Inject constructor(
+    private val api: Api,
+    private val db: PokedexDao
+) : ViewModel() {
 
     val pokemon = MutableLiveData<UiState<PokemonDetail>>(UiState.Loading)
+    val isFavorite = MutableLiveData<Boolean>(false)
 
     fun getPokemonDetail(id: Int) {
         viewModelScope.launch {
@@ -28,6 +34,22 @@ class DetailViewModel @Inject constructor(private val api: Api) : ViewModel() {
             } catch (e: Exception) {
                 pokemon.value = UiState.Error(e.message ?: "Unknown error")
             }
+        }
+    }
+
+    fun getFavorite(id: Int) =
+        viewModelScope.launch {
+            isFavorite.value = db.checkIsFavorite(id) != null
+        }
+
+    fun toggleFavorite(id: Int, name: String) {
+        viewModelScope.launch {
+            if (isFavorite.value == true) {
+                db.removeFavorite(id)
+            } else {
+                db.insert(Favorite(id, name))
+            }
+            getFavorite(id)
         }
     }
 }

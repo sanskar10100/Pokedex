@@ -9,9 +9,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.text.intl.Locale
 
-fun Modifier.clickWithRipple(onClick: () -> Unit) = composed {
+fun Modifier.clickWithRipple(bounded: Boolean = true, onClick: () -> Unit) = composed {
     Modifier.clickable(
-        indication = rememberRipple(bounded = true),
+        indication = rememberRipple(bounded = bounded),
         onClick = onClick,
         interactionSource = remember { MutableInteractionSource() }
     )
