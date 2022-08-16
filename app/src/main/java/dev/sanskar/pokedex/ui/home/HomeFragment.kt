@@ -1,5 +1,6 @@
 package dev.sanskar.pokedex.ui.home
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -41,11 +42,14 @@ import androidx.compose.material.LocalContentAlpha
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -69,6 +73,7 @@ import dev.sanskar.pokedex.model.PokemonDetail
 import dev.sanskar.pokedex.model.UiState
 import dev.sanskar.pokedex.ui.theme.PokedexTheme
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
@@ -89,23 +94,31 @@ class HomeFragment : Fragment() {
         }
     }
 
+    @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
     @Composable
     fun PokedexApp() {
         var error by remember { mutableStateOf("") }
+        val scaffoldState = rememberScaffoldState()
+        val coroutineScope = rememberCoroutineScope()
 
-        Scaffold {
-            ShowPokemons(Modifier.padding(it)) {
-                error = it
+        if (error.isNotEmpty()) {
+            LaunchedEffect(error) {
+                coroutineScope.launch {
+                    scaffoldState.snackbarHostState.showSnackbar(error)
+                }
             }
-            if (error.isNotEmpty()) {
-                Toast.makeText(LocalContext.current, error, Toast.LENGTH_SHORT).show()
+        }
+
+        Scaffold(scaffoldState = scaffoldState) {
+            ShowPokemons {
+                error = it
             }
         }
     }
 
     @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
     @Composable
-    fun ShowPokemons(modifier: Modifier = Modifier, onError: (String) -> Unit) {
+    fun ShowPokemons(onError: (String) -> Unit) {
         val pokemonState = viewModel.pokemons.observeAsState()
         var loading by rememberSaveable { mutableStateOf(true) }
 
@@ -138,13 +151,19 @@ class HomeFragment : Fragment() {
                     initialOffsetY = { it }
                 )) {
                     LazyColumn(
-                        modifier = Modifier.padding(8.dp)
+                        modifier = Modifier.padding(8.dp),
                     ) {
                         stickyHeader {
                             ListHeader()
                         }
                         items(items = currentState.data, key = { it.name }) {
                             ListItem(it)
+                        }
+                        item {
+                            LaunchedEffect(Unit) {
+                                onError("Last item reached, size: ${currentState.data.size}")
+                                viewModel.getPokemons()
+                            }
                         }
                     }
                 }

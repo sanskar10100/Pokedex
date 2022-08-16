@@ -5,11 +5,15 @@ import dev.sanskar.pokedex.model.Pokemons
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface Api {
 
-    @GET("pokemon?limit=20")
-    suspend fun getPokemons(): Response<Pokemons>
+    @GET("pokemon")
+    suspend fun getPokemons(
+        @Query("offset") offset: Int,
+        @Query("limit") limit: Int
+    ): Response<Pokemons>
 
     @GET("pokemon/{name}")
     suspend fun getPokemonDetail(
