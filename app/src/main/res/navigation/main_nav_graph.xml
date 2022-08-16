@@ -11,6 +11,9 @@
         <action
             android:id="@+id/action_homeFragment_to_detailFragment"
             app:destination="@id/detailFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_favoritesFragment"
+            app:destination="@id/favoritesFragment" />
     </fragment>
     <dialog
         android:id="@+id/detailFragment"
@@ -19,4 +22,17 @@
         <argument android:name="pokemonId"
             app:argType="integer" />
     </dialog>
+    <fragment
+        android:id="@+id/favoritesFragment"
+        android:name="dev.sanskar.pokedex.ui.favorites.FavoritesFragment"
+        android:label="FavoritesFragment" />
+    <action
+        android:id="@+id/action_global_homeFragment"
+        app:destination="@id/homeFragment"
+        app:popUpTo="@id/homeFragment"
+        app:popUpToInclusive="true" />
+    <action
+        android:id="@+id/action_global_favoritesFragment"
+        app:destination="@id/favoritesFragment"
+        app:popUpTo="@id/homeFragment" />
 </navigation>
