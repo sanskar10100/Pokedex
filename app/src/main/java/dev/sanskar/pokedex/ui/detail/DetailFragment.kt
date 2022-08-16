@@ -167,7 +167,7 @@ class DetailFragment : BottomSheetDialogFragment() {
         }
 
         SubcomposeAsyncImage(
-            model = pokemon.sprites.frontDefault,
+            model = pokemon.sprites.front_default,
             contentDescription = "NameData Image",
             loading = {
                 CircularProgressIndicator()

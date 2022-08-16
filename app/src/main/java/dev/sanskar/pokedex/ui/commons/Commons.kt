@@ -117,7 +117,7 @@ private fun ListItem(it: PokemonDetail, onClick: () -> Unit) {
                 Modifier.background(Color(0xFFE6EE9C))
             ) {
                 SubcomposeAsyncImage(
-                    model = it.sprites.frontDefault,
+                    model = it.sprites.front_default,
                     contentDescription = "Image of ${it.name}",
                     loading = {
                         CircularProgressIndicator(modifier = Modifier.size(24.dp))
