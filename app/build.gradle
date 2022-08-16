@@ -14,7 +14,7 @@ android {
         minSdk 21
         targetSdk 32
         versionCode 1
-        versionName "1.0"
+        versionName "0.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -82,7 +82,6 @@ dependencies {
     implementation "androidx.compose.foundation:foundation:$compose_version"
     implementation "androidx.compose.material:material:$compose_version"
     implementation "androidx.compose.material:material-icons-core:$compose_version"
-    implementation "androidx.compose.material:material-icons-extended:$compose_version"
     implementation 'androidx.activity:activity-compose:1.5.1'
     implementation 'androidx.compose.runtime:runtime-livedata:1.2.0'
 
@@ -102,4 +101,5 @@ dependencies {
     kapt "androidx.room:room-compiler:$room_version"
 
     implementation "com.google.accompanist:accompanist-swiperefresh:0.26.1-alpha"
+    implementation "com.google.accompanist:accompanist-pager:0.26.1-alpha"
 }
