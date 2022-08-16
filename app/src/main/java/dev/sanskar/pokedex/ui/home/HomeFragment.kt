@@ -69,6 +69,8 @@ import dev.sanskar.pokedex.R
 import dev.sanskar.pokedex.getCurrent
 import dev.sanskar.pokedex.model.PokemonDetail
 import dev.sanskar.pokedex.model.UiState
+import dev.sanskar.pokedex.ui.commons.PokemonsList
+import dev.sanskar.pokedex.ui.commons.ShowLoader
 import dev.sanskar.pokedex.ui.theme.PokedexTheme
 import kotlinx.coroutines.launch
 
@@ -97,6 +99,7 @@ class HomeFragment : Fragment() {
         var error by remember { mutableStateOf("") }
         val scaffoldState = rememberScaffoldState()
         val coroutineScope = rememberCoroutineScope()
+        val pokemonState by viewModel.pokemons.observeAsState()
 
         if (error.isNotEmpty()) {
             LaunchedEffect(error) {
@@ -111,7 +114,7 @@ class HomeFragment : Fragment() {
             bottomBar = {
                 BottomNavigation(
                     modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 16.dp)
+                        .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
                         .clip(RoundedCornerShape(16.dp)),
                     elevation = 5.dp
                 ) {
@@ -135,143 +138,19 @@ class HomeFragment : Fragment() {
                 }
             }
         ) {
-            ShowPokemons(it.calculateBottomPadding()) {
-                error = it
-            }
-        }
-    }
-
-    @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
-    @Composable
-    fun ShowPokemons(padding: Dp, onError: (String) -> Unit) {
-        val pokemonState = viewModel.pokemons.observeAsState()
-        var loading by rememberSaveable { mutableStateOf(true) }
-
-        AnimatedVisibility(
-            visible = loading,
-            exit = scaleOut(animationSpec = tween(1000))
-        ) {
-            ShowLoader()
-        }
-
-        when (val currentState = pokemonState.value) {
-            null -> {
-                onError("Pokemons not found")
-                loading = false
-            }
-            is UiState.Loading -> {
-                loading = true
-            }
-            is UiState.Error -> {
-                loading = false
-                onError(currentState.message)
-            }
-            is UiState.Success -> {
-                AnimatedVisibility(visible = !loading, enter = slideInVertically(
-                    animationSpec = tween(
-                        durationMillis = 500,
-                        500,
-                        easing = LinearOutSlowInEasing
-                    ),
-                    initialOffsetY = { it }
-                )) {
-                    LazyColumn(
-                        modifier = Modifier.padding(8.dp),
-                    ) {
-                        stickyHeader {
-                            ListHeader()
-                        }
-                        items(items = currentState.data, key = { it.name }) {
-                            ListItem(it)
-                        }
-                        item {
-                            LaunchedEffect(Unit) {
-                                viewModel.getPokemons()
-                            }
-                        }
-                        item {
-                            Spacer(modifier = Modifier.height(padding))
-                        }
+            if (pokemonState != null) {
+                PokemonsList(
+                    it.calculateBottomPadding(),
+                    pokemonState!!,
+                    lastItemReached = { viewModel.getPokemons() },
+                    onListItemClicked = {
+                        val directions = HomeFragmentDirections.actionHomeFragmentToDetailFragment(it)
+                        findNavController().navigate(directions)
                     }
-                }
-                loading = false
-            }
-        }
-    }
-
-    @OptIn(ExperimentalMaterialApi::class)
-    @Composable
-    private fun ListItem(it: PokemonDetail) {
-        Card(
-            modifier = Modifier.padding(8.dp),
-            onClick = {
-                val navDirections = HomeFragmentDirections.actionHomeFragmentToDetailFragment(it.id)
-                findNavController().navigate(navDirections)
-            },
-            backgroundColor = Color(0xFF81D4FA),
-            elevation = 3.dp,
-            shape = RoundedCornerShape(16.dp)
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = it.name.replaceFirstChar { it.uppercase() },
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(8.dp)
-                        .fillMaxWidth(),
-                )
-                Box(
-                    Modifier.background(Color(0xFFE6EE9C))
                 ) {
-                    SubcomposeAsyncImage(
-                        model = it.sprites.frontDefault,
-                        contentDescription = "Image of ${it.name}",
-                        loading = {
-                            CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                        },
-                        modifier = Modifier.size(72.dp),
-                        contentScale = ContentScale.FillBounds
-                    )
+                    error = it
                 }
             }
-        }
-    }
-
-    @Composable
-    fun ShowLoader() {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            CircularProgressIndicator(
-                modifier = Modifier
-                    .size(200.dp)
-            )
-        }
-    }
-
-    @Composable
-    private fun ListHeader() {
-        Column(
-            Modifier.background(MaterialTheme.colors.surface)
-        ) {
-            Text(
-                "Tap on a pokemon to know more about it!",
-                style = MaterialTheme.typography.h6,
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
-            )
-            Divider()
-            Spacer(modifier = Modifier.height(8.dp))
-        }
-    }
-
-    @Preview
-    @Composable
-    fun ShowPokemonsPreview() {
-        PokedexTheme {
-            ShowPokemons(0.dp, onError = {})
         }
     }
 }
