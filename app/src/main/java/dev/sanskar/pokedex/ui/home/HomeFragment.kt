@@ -94,7 +94,6 @@ class HomeFragment : Fragment() {
         }
     }
 
-    @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
     @Composable
     fun PokedexApp() {
         var error by remember { mutableStateOf("") }
@@ -110,7 +109,7 @@ class HomeFragment : Fragment() {
         }
 
         Scaffold(scaffoldState = scaffoldState) {
-            ShowPokemons {
+            ShowPokemons(Modifier.padding(it)) {
                 error = it
             }
         }
@@ -118,7 +117,7 @@ class HomeFragment : Fragment() {
 
     @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
     @Composable
-    fun ShowPokemons(onError: (String) -> Unit) {
+    fun ShowPokemons(modifier: Modifier = Modifier, onError: (String) -> Unit) {
         val pokemonState = viewModel.pokemons.observeAsState()
         var loading by rememberSaveable { mutableStateOf(true) }
 
@@ -151,7 +150,7 @@ class HomeFragment : Fragment() {
                     initialOffsetY = { it }
                 )) {
                     LazyColumn(
-                        modifier = Modifier.padding(8.dp),
+                        modifier = modifier.padding(8.dp),
                     ) {
                         stickyHeader {
                             ListHeader()
@@ -161,7 +160,6 @@ class HomeFragment : Fragment() {
                         }
                         item {
                             LaunchedEffect(Unit) {
-                                onError("Last item reached, size: ${currentState.data.size}")
                                 viewModel.getPokemons()
                             }
                         }
