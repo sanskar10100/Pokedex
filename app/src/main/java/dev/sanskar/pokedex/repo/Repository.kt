@@ -2,6 +2,7 @@ package dev.sanskar.pokedex.repo
 
 import android.util.Log
 import dev.sanskar.pokedex.db.PokedexDao
+import dev.sanskar.pokedex.model.Favorite
 import dev.sanskar.pokedex.model.PokemonDetail
 import dev.sanskar.pokedex.model.UiState
 import dev.sanskar.pokedex.network.Api
@@ -48,7 +49,22 @@ class Repository @Inject constructor(
         }
     }.flowOn(Dispatchers.IO)
 
-    fun getFavoritePokemons() {
-
+    suspend fun getFavoritePokemons(): List<PokemonDetail> {
+        val favoritePokemonDetails = mutableListOf<PokemonDetail>()
+        val favoritePokemons = dao.getAllFavorites()
+        favoritePokemons.forEach { favoritePokemon ->
+            val findResult = pokemonsTillNow.find { it.name == favoritePokemon.name }
+            if (findResult != null) {
+                favoritePokemonDetails += findResult
+            } else {
+                val response = api.getPokemonDetail(favoritePokemon.name)
+                if (response.isSuccessful) {
+                    response.body()?.let {
+                        favoritePokemonDetails += it
+                    }
+                }
+            }
+        }
+        return favoritePokemonDetails
     }
 }
