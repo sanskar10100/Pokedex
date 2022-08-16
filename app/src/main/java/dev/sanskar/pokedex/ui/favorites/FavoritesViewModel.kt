@@ -3,6 +3,7 @@ package dev.sanskar.pokedex.ui.favorites
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.sanskar.pokedex.db.PokedexDao
 import dev.sanskar.pokedex.model.PokemonDetail
 import dev.sanskar.pokedex.model.UiState
@@ -11,6 +12,7 @@ import dev.sanskar.pokedex.repo.Repository
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 
+@HiltViewModel
 class FavoritesViewModel @Inject constructor(
     private val repo: Repository,
 ) : ViewModel() {

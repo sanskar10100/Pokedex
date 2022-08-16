@@ -5,19 +5,31 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import dagger.hilt.android.AndroidEntryPoint
 import dev.sanskar.pokedex.Screen
 import dev.sanskar.pokedex.ui.commons.BottomNav
+import dev.sanskar.pokedex.ui.commons.PokemonsList
+import dev.sanskar.pokedex.ui.commons.ShowErrorSnackbar
 import dev.sanskar.pokedex.ui.theme.PokedexTheme
 
+@AndroidEntryPoint
 class FavoritesFragment : Fragment() {
+
+    private val viewModel by viewModels<FavoritesViewModel>()
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -34,15 +46,27 @@ class FavoritesFragment : Fragment() {
     }
 
     @Composable
-    fun FavoritesScreen(modifier: Modifier = Modifier) {
+    fun FavoritesScreen() {
         val scaffoldState = rememberScaffoldState()
+        val pokemonState by viewModel.favoritePokemons.observeAsState()
+        var error by remember { mutableStateOf("") }
         Scaffold(
             scaffoldState = scaffoldState,
-            bottomBar = {
-                BottomNav(navController = findNavController(), selectedItem = Screen.FAVORITES)
-            }
+            bottomBar = { BottomNav(navController = findNavController(), selectedItem = Screen.FAVORITES) }
         ) {
-            Text(text = "Hello")
+            if (error.isNotEmpty()) { scaffoldState.ShowErrorSnackbar(error) }
+
+            if (pokemonState != null) {
+                PokemonsList(padding = it.calculateBottomPadding(),
+                    pokemonState = pokemonState!!,
+                    lastItemReached = { },
+                    showLoader = false,
+                    headerText = "Here are your favorite pokemons!",
+                    onListItemClicked = {
+                        val directions = FavoritesFragmentDirections.actionFavoritesFragmentToDetailFragment(it)
+                        findNavController().navigate(directions)
+                    }) { error = it }
+            }
         }
     }
 }

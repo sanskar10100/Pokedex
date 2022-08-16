@@ -24,6 +24,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import dev.sanskar.pokedex.Screen
 import dev.sanskar.pokedex.ui.commons.BottomNav
 import dev.sanskar.pokedex.ui.commons.PokemonsList
+import dev.sanskar.pokedex.ui.commons.ShowErrorSnackbar
 import dev.sanskar.pokedex.ui.theme.PokedexTheme
 import kotlinx.coroutines.launch
 
@@ -51,16 +52,8 @@ class HomeFragment : Fragment() {
     fun HomeScreen() {
         var error by remember { mutableStateOf("") }
         val scaffoldState = rememberScaffoldState()
-        val coroutineScope = rememberCoroutineScope()
         val pokemonState by viewModel.pokemons.observeAsState()
-
-        if (error.isNotEmpty()) {
-            LaunchedEffect(error) {
-                coroutineScope.launch {
-                    scaffoldState.snackbarHostState.showSnackbar(error)
-                }
-            }
-        }
+        if (error.isNotEmpty()) { scaffoldState.ShowErrorSnackbar(error) }
 
         Scaffold(
             scaffoldState = scaffoldState,

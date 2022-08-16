@@ -22,7 +22,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomNavigation
-import androidx.compose.material.BottomNavigationDefaults
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
@@ -30,6 +29,7 @@ import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ScaffoldState
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
@@ -38,6 +38,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -49,12 +50,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.fragment.findNavController
 import coil.compose.SubcomposeAsyncImage
 import dev.sanskar.pokedex.R
 import dev.sanskar.pokedex.Screen
 import dev.sanskar.pokedex.model.PokemonDetail
 import dev.sanskar.pokedex.model.UiState
+import kotlinx.coroutines.launch
 
 @Composable
 private fun ListHeader(header: String = "Tap on a pokemon to know more about it!") {
@@ -77,7 +78,7 @@ private fun ListHeader(header: String = "Tap on a pokemon to know more about it!
 fun ShowLoader(loading: Boolean) {
     AnimatedVisibility(
         visible = loading,
-        exit = scaleOut(animationSpec = tween(1000))
+        exit = scaleOut(animationSpec = tween(500))
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -134,12 +135,14 @@ private fun ListItem(it: PokemonDetail, onClick: () -> Unit) {
 fun PokemonsList(
     padding: Dp,
     pokemonState: UiState<List<PokemonDetail>>,
+    showLoader: Boolean = true,
+    headerText: String = "",
     lastItemReached: () -> Unit,
     onListItemClicked: (Int) -> Unit,
     onError: (String) -> Unit
 ) {
     var loading by rememberSaveable { mutableStateOf(true) }
-    ShowLoader(loading)
+    if (showLoader) ShowLoader(loading)
 
     when (pokemonState) {
         null -> {
@@ -157,7 +160,7 @@ fun PokemonsList(
             AnimatedVisibility(visible = !loading, enter = slideInVertically(
                 animationSpec = tween(
                     durationMillis = 500,
-                    500,
+                    delayMillis = if (showLoader) 500 else 0,
                     easing = LinearOutSlowInEasing
                 ),
                 initialOffsetY = { it }
@@ -166,7 +169,7 @@ fun PokemonsList(
                     modifier = Modifier.padding(8.dp),
                 ) {
                     stickyHeader {
-                        ListHeader()
+                        if (headerText.isNotEmpty()) ListHeader(headerText) else ListHeader()
                     }
                     items(items = pokemonState.data, key = { it.name }) {
                         ListItem(it) { onListItemClicked(it.id) }
@@ -216,5 +219,15 @@ fun BottomNav(
             },
             label = { Text("Favorites") }
         )
+    }
+}
+
+@Composable
+fun ScaffoldState.ShowErrorSnackbar(message: String) {
+    val coroutineScope = rememberCoroutineScope()
+    LaunchedEffect(message) {
+        coroutineScope.launch {
+            this@ShowErrorSnackbar.snackbarHostState.showSnackbar(message)
+        }
     }
 }
