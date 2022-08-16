@@ -14,6 +14,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -54,7 +55,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.navArgs
+import coil.compose.AsyncImage
 import coil.compose.SubcomposeAsyncImage
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.HorizontalPagerIndicator
+import com.google.accompanist.pager.rememberPagerState
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -62,8 +68,10 @@ import dagger.hilt.android.AndroidEntryPoint
 import dev.sanskar.pokedex.capitalizeWords
 import dev.sanskar.pokedex.clickWithRipple
 import dev.sanskar.pokedex.model.PokemonDetail
+import dev.sanskar.pokedex.model.Sprites
 import dev.sanskar.pokedex.model.UiState
 import dev.sanskar.pokedex.ui.theme.PokedexTheme
+import kotlin.reflect.full.memberProperties
 
 @AndroidEntryPoint
 class DetailFragment : BottomSheetDialogFragment() {
@@ -166,15 +174,7 @@ class DetailFragment : BottomSheetDialogFragment() {
             )
         }
 
-        SubcomposeAsyncImage(
-            model = pokemon.sprites.front_default,
-            contentDescription = "NameData Image",
-            loading = {
-                CircularProgressIndicator()
-            },
-            modifier = Modifier.size(128.dp),
-            contentScale = ContentScale.Crop
-        )
+        ImagePager(pokemon)
         Spacer(modifier = Modifier.height(20.dp))
 
         Row(
@@ -219,7 +219,6 @@ class DetailFragment : BottomSheetDialogFragment() {
                 )
             }
         }
-        Spacer(Modifier.height(16.dp))
         Row(
             Modifier
                 .padding(16.dp)
@@ -251,5 +250,36 @@ class DetailFragment : BottomSheetDialogFragment() {
                 }
             }
         }
+    }
+
+    @OptIn(ExperimentalPagerApi::class)
+    @Composable
+    fun ImagePager(pokemon: PokemonDetail, modifier: Modifier = Modifier) {
+        val sprites = pokemon.sprites.getNonNullItems()
+        val pagerState = rememberPagerState()
+        var loading by remember { mutableStateOf(true) }
+        HorizontalPager(
+            count = sprites.size,
+            modifier = Modifier.size(192.dp),
+            state = pagerState
+        ) { page ->
+            Box(contentAlignment = Alignment.Center) {
+                AsyncImage(
+                    model = sprites[page],
+                    contentDescription = "Pokemon ${pokemon.name}",
+                    modifier = Modifier.fillMaxSize(),
+                    onLoading = {
+                        loading = true
+                    },
+                    onSuccess = {
+                        loading = false
+                    }
+                )
+                AnimatedVisibility(visible = loading) {
+                    CircularProgressIndicator()
+                }
+            }
+        }
+        HorizontalPagerIndicator(pagerState = pagerState)
     }
 }

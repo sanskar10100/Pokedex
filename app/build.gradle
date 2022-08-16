@@ -102,4 +102,5 @@ dependencies {
 
     implementation "com.google.accompanist:accompanist-swiperefresh:0.26.1-alpha"
     implementation "com.google.accompanist:accompanist-pager:0.26.1-alpha"
+    implementation "com.google.accompanist:accompanist-pager-indicators:0.26.1-alpha"
 }
