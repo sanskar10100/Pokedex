@@ -116,8 +116,8 @@ class HomeFragment : Fragment() {
                     elevation = 5.dp
                 ) {
                     BottomNavigationItem(
-                        selected = currentDestination.value == R.id.homeFragment,
-                        onClick = { findNavController().navigate(R.id.action_global_homeFragment) },
+                        selected = true,
+                        onClick = { },
                         icon = {
                             Icon(Icons.Filled.Home, contentDescription = "Home")
                         },
@@ -125,12 +125,12 @@ class HomeFragment : Fragment() {
                     )
 
                     BottomNavigationItem(
-                        selected = currentDestination.value == R.id.favoritesFragment,
+                        selected = false,
                         onClick = { findNavController().navigate(R.id.action_global_favoritesFragment) },
                         icon = {
-                            Icon(Icons.Filled.Favorite, contentDescription = "Favorite")
+                            Icon(Icons.Filled.Favorite, contentDescription = "Favorites")
                         },
-                        label = { Text("Favorite") }
+                        label = { Text("Favorites") }
                     )
                 }
             }
