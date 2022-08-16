@@ -58,6 +58,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -96,7 +97,6 @@ class HomeFragment : Fragment() {
         var error by remember { mutableStateOf("") }
         val scaffoldState = rememberScaffoldState()
         val coroutineScope = rememberCoroutineScope()
-        val currentDestination = findNavController().getCurrent()
 
         if (error.isNotEmpty()) {
             LaunchedEffect(error) {
@@ -135,7 +135,7 @@ class HomeFragment : Fragment() {
                 }
             }
         ) {
-            ShowPokemons {
+            ShowPokemons(it.calculateBottomPadding()) {
                 error = it
             }
         }
@@ -143,7 +143,7 @@ class HomeFragment : Fragment() {
 
     @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
     @Composable
-    fun ShowPokemons(modifier: Modifier = Modifier, onError: (String) -> Unit) {
+    fun ShowPokemons(padding: Dp, onError: (String) -> Unit) {
         val pokemonState = viewModel.pokemons.observeAsState()
         var loading by rememberSaveable { mutableStateOf(true) }
 
@@ -176,7 +176,7 @@ class HomeFragment : Fragment() {
                     initialOffsetY = { it }
                 )) {
                     LazyColumn(
-                        modifier = modifier.padding(8.dp),
+                        modifier = Modifier.padding(8.dp),
                     ) {
                         stickyHeader {
                             ListHeader()
@@ -188,6 +188,9 @@ class HomeFragment : Fragment() {
                             LaunchedEffect(Unit) {
                                 viewModel.getPokemons()
                             }
+                        }
+                        item {
+                            Spacer(modifier = Modifier.height(padding))
                         }
                     }
                 }
@@ -268,7 +271,7 @@ class HomeFragment : Fragment() {
     @Composable
     fun ShowPokemonsPreview() {
         PokedexTheme {
-            ShowPokemons(onError = {})
+            ShowPokemons(0.dp, onError = {})
         }
     }
 }
