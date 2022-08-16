@@ -24,15 +24,7 @@ fun Modifier.clickWithRipple(bounded: Boolean = true, onClick: () -> Unit) = com
 
 fun String.capitalizeWords(): String = split(" ").joinToString(" ") { it.replaceFirstChar { it.uppercase() } }
 
-fun NavController.isOnScreen(screen: Int) = currentDestination?.id == screen
-
-@Composable
-fun NavController.getCurrent(): State<Int> {
-    val state = remember {
-        mutableStateOf(0)
-    }
-    addOnDestinationChangedListener { _, destination, _ ->
-        state.value = destination.id
-    }
-    return state
+enum class Screen {
+    HOME,
+    FAVORITES
 }
