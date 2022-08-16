@@ -11,19 +11,23 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import dagger.hilt.android.AndroidEntryPoint
 import dev.sanskar.pokedex.Screen
 import dev.sanskar.pokedex.ui.commons.BottomNav
 import dev.sanskar.pokedex.ui.commons.PokemonsList
 import dev.sanskar.pokedex.ui.commons.ShowErrorSnackbar
 import dev.sanskar.pokedex.ui.theme.PokedexTheme
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class FavoritesFragment : Fragment() {
@@ -50,6 +54,8 @@ class FavoritesFragment : Fragment() {
         val scaffoldState = rememberScaffoldState()
         val pokemonState by viewModel.favoritePokemons.observeAsState()
         var error by remember { mutableStateOf("") }
+        val swipeRefreshState = rememberSwipeRefreshState(isRefreshing = false)
+        val coroutineScope = rememberCoroutineScope()
         Scaffold(
             scaffoldState = scaffoldState,
             bottomBar = { BottomNav(navController = findNavController(), selectedItem = Screen.FAVORITES) }
@@ -57,15 +63,24 @@ class FavoritesFragment : Fragment() {
             if (error.isNotEmpty()) { scaffoldState.ShowErrorSnackbar(error) }
 
             if (pokemonState != null) {
-                PokemonsList(padding = it.calculateBottomPadding(),
-                    pokemonState = pokemonState!!,
-                    lastItemReached = { },
-                    showLoader = false,
-                    headerText = "Here are your favorite pokemons!",
-                    onListItemClicked = {
-                        val directions = FavoritesFragmentDirections.actionFavoritesFragmentToDetailFragment(it)
-                        findNavController().navigate(directions)
-                    }) { error = it }
+                SwipeRefresh(state = swipeRefreshState, {
+                    viewModel.getFavoritePokemons()
+                    coroutineScope.launch {
+                        swipeRefreshState.isRefreshing = true
+                        delay(500)
+                        swipeRefreshState.isRefreshing = false
+                    }
+                }) {
+                    PokemonsList(padding = it.calculateBottomPadding(),
+                        pokemonState = pokemonState!!,
+                        lastItemReached = { },
+                        showLoader = false,
+                        headerText = "Here are your favorite pokemons!",
+                        onListItemClicked = {
+                            val directions = FavoritesFragmentDirections.actionFavoritesFragmentToDetailFragment(it)
+                            findNavController().navigate(directions)
+                        }) { error = it }
+                }
             }
         }
     }

@@ -20,6 +20,10 @@ class FavoritesViewModel @Inject constructor(
     val favoritePokemons = MutableLiveData<UiState<List<PokemonDetail>>>(UiState.Loading)
 
     init {
+        getFavoritePokemons()
+    }
+
+    fun getFavoritePokemons() {
         viewModelScope.launch {
             repo.getFavoritePokemons().let {
                 if (it.isEmpty()) {
