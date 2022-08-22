@@ -257,7 +257,7 @@ fun PokemonsList(
         }
         items(pokemonsList) { item ->
             ListItem(item, loading) {
-                if (loading) onListItemClicked(item.id) else {
+                if (!loading) onListItemClicked(item.id) else {
 
                 }
             }
