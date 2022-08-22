@@ -1,3 +1,4 @@
+
 # Pokedex
 A sample Android app that displays a list of pokemons and their details, built using Jetpack Compose
 
@@ -18,6 +19,7 @@ A sample Android app that displays a list of pokemons and their details, built u
 - Room
 - Compose Accompanist (SwipeRefresh, Pager)
 - [logcat](https://github.com/square/logcat)
+- [SplashScreen Compat](https://developer.android.com/guide/topics/ui/splash-screen/migrate#migrate_your_splash_screen_implementation) 
 
 ---
 
