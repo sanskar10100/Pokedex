@@ -1,11 +1,20 @@
 package dev.sanskar.pokedex.ui.commons
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.keyframes
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleOut
-import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.with
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -30,6 +39,7 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ScaffoldState
+import androidx.compose.material.SnackbarDefaults.backgroundColor
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
@@ -37,7 +47,9 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -51,9 +63,16 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.SubcomposeAsyncImage
+import com.google.accompanist.placeholder.PlaceholderHighlight
+import com.google.accompanist.placeholder.material.placeholder
+import com.google.accompanist.placeholder.material.shimmer
 import dev.sanskar.pokedex.R
 import dev.sanskar.pokedex.Screen
+import dev.sanskar.pokedex.model.Move
+import dev.sanskar.pokedex.model.NameData
 import dev.sanskar.pokedex.model.PokemonDetail
+import dev.sanskar.pokedex.model.Sprites
+import dev.sanskar.pokedex.model.Stat
 import dev.sanskar.pokedex.model.UiState
 import kotlinx.coroutines.launch
 
@@ -73,58 +92,51 @@ private fun ListHeader(header: String = "Tap on a pokemon to know more about it!
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
-@Composable
-fun ShowLoader(loading: Boolean) {
-    AnimatedVisibility(
-        visible = loading,
-        exit = scaleOut(animationSpec = tween(500))
-    ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            CircularProgressIndicator(
-                modifier = Modifier
-                    .size(200.dp)
-            )
-        }
-    }
-}
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalAnimationApi::class)
 @Composable
-private fun ListItem(it: PokemonDetail, onClick: () -> Unit) {
+private fun ListItem(pokemon: PokemonDetail?, loading: Boolean = false, onClick: () -> Unit) {
     Card(
-        modifier = Modifier.padding(8.dp),
+        modifier = Modifier
+            .padding(8.dp)
+            .placeholder(
+                visible = loading,
+                highlight = PlaceholderHighlight.shimmer()
+            ),
         onClick = {
             onClick()
         },
-        backgroundColor = Color(0xFF81D4FA),
         elevation = 3.dp,
         shape = RoundedCornerShape(16.dp)
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = it.name.replaceFirstChar { it.uppercase() },
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(8.dp)
-                    .fillMaxWidth(),
-            )
-            Box(
-                Modifier.background(Color(0xFFE6EE9C))
+        AnimatedContent(targetState = loading, transitionSpec = {
+            fadeIn() + slideIntoContainer(towards = AnimatedContentScope.SlideDirection.Left,
+                animationSpec = tween(500)) with fadeOut()
+        }) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.background(Color(0xFF81D4FA))
             ) {
-                SubcomposeAsyncImage(
-                    model = it.sprites.front_default,
-                    contentDescription = "Image of ${it.name}",
-                    loading = {
-                        CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                    },
-                    modifier = Modifier.size(72.dp),
-                    contentScale = ContentScale.FillBounds
+                Text(
+                    text = pokemon?.name?.replaceFirstChar { it.uppercase() } ?: "",
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(8.dp)
+                        .fillMaxWidth(),
                 )
+                Box(
+                    Modifier.background(Color(0xFFE6EE9C))
+                ) {
+                    SubcomposeAsyncImage(
+                        model = pokemon?.sprites?.front_default ?: "",
+                        contentDescription = "Image of ${pokemon?.name}",
+                        loading = {
+                            CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                        },
+                        modifier = Modifier.size(72.dp),
+                        contentScale = ContentScale.FillBounds
+                    )
+                }
             }
         }
     }
@@ -139,10 +151,126 @@ fun PokemonsList(
     headerText: String = "",
     lastItemReached: () -> Unit,
     onListItemClicked: (Int) -> Unit,
-    onError: (String) -> Unit
+    onError: (String) -> Unit,
 ) {
     var loading by rememberSaveable { mutableStateOf(true) }
-    if (showLoader) ShowLoader(loading)
+    val pokemonsList = remember {
+        mutableStateListOf(
+            PokemonDetail(0,
+                0,
+                0,
+                "",
+                listOf(Move(NameData("", ""))),
+                1,
+                Sprites(front_default = ""),
+                stats = listOf(
+                    Stat(20, NameData("", ""))),
+                20),
+            PokemonDetail(0,
+                0,
+                0,
+                "",
+                listOf(Move(NameData("", ""))),
+                1,
+                Sprites(front_default = ""),
+                stats = listOf(
+                    Stat(20, NameData("", ""))),
+                20),
+            PokemonDetail(0,
+                0,
+                0,
+                "",
+                listOf(Move(NameData("", ""))),
+                1,
+                Sprites(front_default = ""),
+                stats = listOf(
+                    Stat(20, NameData("", ""))),
+                20),
+            PokemonDetail(0,
+                0,
+                0,
+                "",
+                listOf(Move(NameData("", ""))),
+                1,
+                Sprites(front_default = ""),
+                stats = listOf(
+                    Stat(20, NameData("", ""))),
+                20),
+            PokemonDetail(0,
+                0,
+                0,
+                "",
+                listOf(Move(NameData("", ""))),
+                1,
+                Sprites(front_default = ""),
+                stats = listOf(
+                    Stat(20, NameData("", ""))),
+                20),
+            PokemonDetail(0,
+                0,
+                0,
+                "",
+                listOf(Move(NameData("", ""))),
+                1,
+                Sprites(front_default = ""),
+                stats = listOf(
+                    Stat(20, NameData("", ""))),
+                20),
+            PokemonDetail(0,
+                0,
+                0,
+                "",
+                listOf(Move(NameData("", ""))),
+                1,
+                Sprites(front_default = ""),
+                stats = listOf(
+                    Stat(20, NameData("", ""))),
+                20),
+            PokemonDetail(0,
+                0,
+                0,
+                "",
+                listOf(Move(NameData("", ""))),
+                1,
+                Sprites(front_default = ""),
+                stats = listOf(
+                    Stat(20, NameData("", ""))),
+                20),
+            PokemonDetail(0,
+                0,
+                0,
+                "",
+                listOf(Move(NameData("", ""))),
+                1,
+                Sprites(front_default = ""),
+                stats = listOf(
+                    Stat(20, NameData("", ""))),
+                20),
+        )
+    }
+    LazyColumn(
+        modifier = Modifier
+            .padding(8.dp)
+    ) {
+        stickyHeader {
+            if (headerText.isNotEmpty()) ListHeader(headerText) else ListHeader()
+        }
+        items(pokemonsList) { item ->
+            ListItem(item, loading) {
+                if (loading) onListItemClicked(item.id) else {
+
+                }
+            }
+        }
+        item {
+            LaunchedEffect(Unit) {
+                lastItemReached()
+            }
+        }
+        item {
+            Spacer(modifier = Modifier.height(padding))
+        }
+    }
 
     when (pokemonState) {
         null -> {
@@ -157,34 +285,9 @@ fun PokemonsList(
             onError(pokemonState.message)
         }
         is UiState.Success -> {
-            AnimatedVisibility(visible = !loading, enter = slideInVertically(
-                animationSpec = tween(
-                    durationMillis = 500,
-                    delayMillis = if (showLoader) 500 else 0,
-                    easing = LinearOutSlowInEasing
-                ),
-                initialOffsetY = { it }
-            )) {
-                LazyColumn(
-                    modifier = Modifier.padding(8.dp),
-                ) {
-                    stickyHeader {
-                        if (headerText.isNotEmpty()) ListHeader(headerText) else ListHeader()
-                    }
-                    items(items = pokemonState.data, key = { it.name }) {
-                        ListItem(it) { onListItemClicked(it.id) }
-                    }
-                    item {
-                        LaunchedEffect(Unit) {
-                            lastItemReached()
-                        }
-                    }
-                    item {
-                        Spacer(modifier = Modifier.height(padding))
-                    }
-                }
-            }
             loading = false
+            pokemonsList.clear()
+            pokemonsList.addAll(pokemonState.data)
         }
     }
 }
@@ -203,7 +306,8 @@ fun BottomNav(
         BottomNavigationItem(
             selected = selectedItem == Screen.HOME,
             onClick = {
-                if (selectedItem != Screen.HOME) navController.popBackStack(R.id.homeFragment, inclusive = false)
+                if (selectedItem != Screen.HOME) navController.popBackStack(R.id.homeFragment,
+                    inclusive = false)
             },
             icon = {
                 Icon(Icons.Filled.Home, contentDescription = "Home")
