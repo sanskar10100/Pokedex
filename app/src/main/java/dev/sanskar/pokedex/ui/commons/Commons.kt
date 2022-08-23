@@ -103,13 +103,13 @@ private fun ListHeader(header: String = "Tap on a pokemon to know more about it!
 private fun ListItem(
     pokemon: PokemonDetail?,
     loading: Boolean = false,
-    onRemove: (Int) -> Unit,
+    onRemove: () -> Unit,
     onClick: () -> Unit,
 ) {
     SwipeToDismiss(
         state = rememberDismissState {
             if (it == DismissValue.DismissedToEnd) {
-                onRemove(pokemon?.id ?: -1)
+                onRemove()
                 true
             } else false
         },
@@ -285,7 +285,7 @@ fun PokemonsList(
             if (headerText.isNotEmpty()) ListHeader(headerText) else ListHeader()
         }
         items(pokemonsList, key = { it.id }) { item ->
-            ListItem(item, loading, { pokemonId -> pokemonsList.removeAll {it.id == pokemonId}}) {
+            ListItem(item, loading, { pokemonsList.removeAll { it.id == item.id}}) {
                 if (!loading) onListItemClicked(item.id) else {
 
                 }
