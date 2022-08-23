@@ -38,13 +38,14 @@ import androidx.compose.material.DismissDirection
 import androidx.compose.material.DismissValue
 import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.FractionalThreshold
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ScaffoldState
-import androidx.compose.material.SnackbarDefaults.backgroundColor
 import androidx.compose.material.SwipeToDismiss
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.rememberDismissState
@@ -61,6 +62,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
@@ -114,14 +116,25 @@ private fun ListItem(
             } else false
         },
         directions = setOf(DismissDirection.StartToEnd),
+        dismissThresholds = { FractionalThreshold(0.5f) },
         background = {
             Box(
                 Modifier
                     .padding(8.dp)
                     .fillMaxSize()
                     .clip(RoundedCornerShape(16.dp))
-                    .background(Color(0xFFFF6F00))
-            )
+                    .background(Color(0xFFFF6F00)),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                Icon(
+                    Icons.Filled.Delete,
+                    contentDescription = "Delete Pokemon",
+                    modifier = Modifier
+                        .padding(start = 16.dp)
+                        .scale(1.2f),
+                    tint = Color(0xFFFFFFFF)
+                )
+            }
         }
     ) {
         Card(
