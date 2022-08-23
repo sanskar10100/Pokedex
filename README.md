@@ -17,7 +17,7 @@ A sample Android app that displays a list of pokemons and their details, built u
 - Retrofit
 - Moshi
 - Room
-- Compose Accompanist (SwipeRefresh, Pager)
+- Compose Accompanist (SwipeRefresh, Pager, Placeholder)
 - [logcat](https://github.com/square/logcat)
 - [SplashScreen Compat](https://developer.android.com/guide/topics/ui/splash-screen/migrate#migrate_your_splash_screen_implementation) 
 
