@@ -25,15 +25,20 @@ import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.DismissDirection
+import androidx.compose.material.DismissValue
 import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.FractionalThreshold
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ScaffoldState
+import androidx.compose.material.SwipeToDismiss
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.rememberDismissState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -95,36 +100,57 @@ fun ShowLoader(loading: Boolean) {
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-private fun ListItem(it: PokemonDetail, onClick: () -> Unit) {
-    Card(
-        modifier = Modifier.padding(8.dp),
-        onClick = {
-            onClick()
-        },
-        backgroundColor = Color(0xFF81D4FA),
-        elevation = 3.dp,
-        shape = RoundedCornerShape(16.dp)
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = it.name.replaceFirstChar { it.uppercase() },
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(8.dp)
-                    .fillMaxWidth(),
-            )
+private fun ListItem(it: PokemonDetail, onRemove: () -> Boolean, onClick: () -> Unit) {
+    val dismissState = rememberDismissState {
+        if (it == DismissValue.DismissedToEnd) {
+            onRemove()
+        } else {
+            false
+        }
+    }
+    SwipeToDismiss(
+        state = dismissState,
+        directions = setOf(DismissDirection.StartToEnd),
+        background = {
             Box(
-                Modifier.background(Color(0xFFE6EE9C))
-            ) {
-                SubcomposeAsyncImage(
-                    model = it.sprites.front_default,
-                    contentDescription = "Image of ${it.name}",
-                    loading = {
-                        CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                    },
-                    modifier = Modifier.size(72.dp),
-                    contentScale = ContentScale.FillBounds
+                modifier = Modifier
+                    .padding(8.dp)
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Color(0xFFF57F17))
+            )
+        },
+    ) {
+        Card(
+            modifier = Modifier.padding(8.dp),
+            onClick = {
+                onClick()
+            },
+            backgroundColor = Color(0xFF81D4FA),
+            elevation = 3.dp,
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = it.name.replaceFirstChar { it.uppercase() },
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(8.dp)
+                        .fillMaxWidth(),
                 )
+                Box(
+                    Modifier.background(Color(0xFFE6EE9C))
+                ) {
+                    SubcomposeAsyncImage(
+                        model = it.sprites.front_default,
+                        contentDescription = "Image of ${it.name}",
+                        loading = {
+                            CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                        },
+                        modifier = Modifier.size(72.dp),
+                        contentScale = ContentScale.FillBounds
+                    )
+                }
             }
         }
     }
@@ -139,6 +165,7 @@ fun PokemonsList(
     headerText: String = "",
     lastItemReached: () -> Unit,
     onListItemClicked: (Int) -> Unit,
+    onRemove: (Int) -> Boolean,
     onError: (String) -> Unit
 ) {
     var loading by rememberSaveable { mutableStateOf(true) }
@@ -171,8 +198,13 @@ fun PokemonsList(
                     stickyHeader {
                         if (headerText.isNotEmpty()) ListHeader(headerText) else ListHeader()
                     }
-                    items(items = pokemonState.data, key = { it.name }) {
-                        ListItem(it) { onListItemClicked(it.id) }
+                    items(items = pokemonState.data, key = { it.id }) {
+                        ListItem(
+                            it,
+                            onRemove = { onRemove(it.id) }
+                        ) {
+                            onListItemClicked(it.id)
+                        }
                     }
                     item {
                         LaunchedEffect(Unit) {

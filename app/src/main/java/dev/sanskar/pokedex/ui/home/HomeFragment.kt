@@ -64,6 +64,9 @@ class HomeFragment : Fragment() {
                     it.calculateBottomPadding(),
                     pokemonState!!,
                     lastItemReached = { viewModel.getPokemons() },
+                    onRemove = {
+                        viewModel.removePokemon(it)
+                    },
                     onListItemClicked = {
                         val directions = HomeFragmentDirections.actionHomeFragmentToDetailFragment(it)
                         findNavController().navigate(directions)

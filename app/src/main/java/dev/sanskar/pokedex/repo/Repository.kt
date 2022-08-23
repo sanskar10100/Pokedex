@@ -23,6 +23,11 @@ class Repository @Inject constructor(
 ) {
     val pokemonsTillNow = mutableListOf<PokemonDetail>()
 
+    suspend fun removePokemon(id: Int): List<PokemonDetail> {
+        pokemonsTillNow.removeAll { it.id == id }
+        return pokemonsTillNow.toList()
+    }
+
     fun getPokemons(offset: Int) = flow {
         logcat { "getPokemons: $offset" }
         try {
