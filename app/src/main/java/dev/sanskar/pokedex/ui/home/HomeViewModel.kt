@@ -9,6 +9,8 @@ import dev.sanskar.pokedex.model.UiState
 import dev.sanskar.pokedex.repo.Repository
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -16,7 +18,7 @@ private const val TAG = "HomeViewModel"
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(private val repo: Repository) : ViewModel() {
-    val pokemons = MutableLiveData<UiState<List<PokemonDetail>>>(UiState.Loading)
+    val pokemons = MutableStateFlow<UiState<List<PokemonDetail>>>(UiState.Loading)
     private var nextOffset = 0
 
     init {

@@ -10,6 +10,7 @@ import dev.sanskar.pokedex.model.PokemonDetail
 import dev.sanskar.pokedex.model.UiState
 import dev.sanskar.pokedex.network.Api
 import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 @HiltViewModel
@@ -18,8 +19,8 @@ class DetailViewModel @Inject constructor(
     private val db: PokedexDao
 ) : ViewModel() {
 
-    val pokemon = MutableLiveData<UiState<PokemonDetail>>(UiState.Loading)
-    val isFavorite = MutableLiveData<Boolean>(false)
+    val pokemon = MutableStateFlow<UiState<PokemonDetail>>(UiState.Loading)
+    val isFavorite = MutableStateFlow(false)
 
     fun getPokemonDetail(id: Int) {
         viewModelScope.launch {
@@ -44,7 +45,7 @@ class DetailViewModel @Inject constructor(
 
     fun toggleFavorite(id: Int, name: String) {
         viewModelScope.launch {
-            if (isFavorite.value == true) {
+            if (isFavorite.value) {
                 db.removeFavorite(id)
             } else {
                 db.insert(Favorite(id, name))

@@ -7,9 +7,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -40,23 +38,22 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.fragment.navArgs
 import coil.compose.AsyncImage
-import coil.compose.SubcomposeAsyncImage
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.HorizontalPagerIndicator
@@ -68,10 +65,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import dev.sanskar.pokedex.capitalizeWords
 import dev.sanskar.pokedex.clickWithRipple
 import dev.sanskar.pokedex.model.PokemonDetail
-import dev.sanskar.pokedex.model.Sprites
 import dev.sanskar.pokedex.model.UiState
 import dev.sanskar.pokedex.ui.theme.PokedexTheme
-import kotlin.reflect.full.memberProperties
 
 @AndroidEntryPoint
 class DetailFragment : BottomSheetDialogFragment() {
@@ -113,10 +108,11 @@ class DetailFragment : BottomSheetDialogFragment() {
         (view.parent as View).setBackgroundColor(android.graphics.Color.TRANSPARENT)
     }
 
+    @OptIn(ExperimentalLifecycleComposeApi::class)
     @Composable
     fun DetailScreen(modifier: Modifier = Modifier) {
-        val pokemon by viewModel.pokemon.observeAsState(UiState.Loading)
-        val isFavorite by viewModel.isFavorite.observeAsState(false)
+        val pokemon by viewModel.pokemon.collectAsStateWithLifecycle()
+        val isFavorite by viewModel.isFavorite.collectAsStateWithLifecycle()
         var loading by remember { mutableStateOf(true) }
 
         LaunchedEffect(key1 = Unit) {

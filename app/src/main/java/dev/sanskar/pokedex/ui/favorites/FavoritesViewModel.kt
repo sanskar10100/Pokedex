@@ -10,6 +10,7 @@ import dev.sanskar.pokedex.model.UiState
 import dev.sanskar.pokedex.network.Api
 import dev.sanskar.pokedex.repo.Repository
 import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 @HiltViewModel
@@ -17,7 +18,7 @@ class FavoritesViewModel @Inject constructor(
     private val repo: Repository,
 ) : ViewModel() {
 
-    val favoritePokemons = MutableLiveData<UiState<List<PokemonDetail>>>(UiState.Loading)
+    val favoritePokemons = MutableStateFlow<UiState<List<PokemonDetail>>>(UiState.Loading)
 
     init {
         getFavoritePokemons()

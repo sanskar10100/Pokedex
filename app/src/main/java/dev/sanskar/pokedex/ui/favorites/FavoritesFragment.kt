@@ -8,7 +8,6 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -17,6 +16,8 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.fragment.findNavController
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
@@ -49,10 +50,11 @@ class FavoritesFragment : Fragment() {
         }
     }
 
+    @OptIn(ExperimentalLifecycleComposeApi::class)
     @Composable
     fun FavoritesScreen() {
         val scaffoldState = rememberScaffoldState()
-        val pokemonState by viewModel.favoritePokemons.observeAsState()
+        val pokemonState by viewModel.favoritePokemons.collectAsStateWithLifecycle()
         var error by remember { mutableStateOf("") }
         val swipeRefreshState = rememberSwipeRefreshState(isRefreshing = false)
         val coroutineScope = rememberCoroutineScope()
