@@ -40,4 +40,11 @@ class HomeViewModel @Inject constructor(private val repo: Repository) : ViewMode
             }
         }
     }
+
+    fun removePokemon(id: Int): Boolean {
+        viewModelScope.launch {
+            pokemons.value = UiState.Success(repo.removePokemon(id))
+        }
+        return true
+    }
 }
