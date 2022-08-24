@@ -81,9 +81,6 @@ class FavoritesFragment : Fragment() {
                         onListItemClicked = {
                             val directions = FavoritesFragmentDirections.actionFavoritesFragmentToDetailFragment(it)
                             findNavController().navigate(directions)
-                        },
-                        onRemove = {
-                            false
                         }
                     ) {
                         error = it
